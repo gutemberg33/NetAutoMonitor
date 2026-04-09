@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Sensitive — never commit
+config/devices.yaml
+.env
+*.key
+*.pem
+
+# Generated output
+output/
+logs/
+
+# Test files
+test_*.py
+
+# OS
+.DS_Store
+Thumbs.db
+
+# VS Code
+.cursor/
