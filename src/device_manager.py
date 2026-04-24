@@ -1,7 +1,13 @@
+from datetime import datetime, timezone
+
 from netmiko import ConnectHandler
+from netmiko.exceptions import NetmikoAuthenticationException, NetmikoTimeoutException
+
+from logger import logger
+
 
 class DeviceManager:
-    """Connects to devices and runs configured command sets."""
+    """Connect to devices and execute configured command sets."""
 
     def __init__(self, devices, commands, timeout=5):
         self.devices = devices
@@ -9,29 +15,44 @@ class DeviceManager:
         self.timeout = timeout
 
     def run(self):
-        """Return command outputs keyed by host and command."""
+        """Return per-device execution results keyed by host:port."""
         results = {}
 
         for device in self.devices:
             host = device["host"]
+            port = device.get("port", 22)
+            key = f"{host}:{port}"
             device_type = device["device_type"]
+            conn = None
 
-            print(f"\n=== {host} ===")
+            try:
+                logger.info("Connecting to %s:%s", host, port)
+                # Reuse one connection per device for all commands.
+                conn = ConnectHandler(**device, timeout=self.timeout)
 
-            # Open one SSH session per device and reuse it for all commands.
-            conn = ConnectHandler(**device, timeout=self.timeout)
+                # Select the command list using device_type from inventory.
+                command_list = self.commands.get(device_type, [])
+                command_results = {}
+                # Use one UTC timestamp for this device execution batch.
+                device_timestamp = datetime.now(timezone.utc).isoformat()
 
-            # Select the command list based on platform/device type.
-            cmd_list = self.commands.get(device_type, [])
+                for command in command_list:
+                    output = conn.send_command(command)
+                    command_results[command] = {
+                        "status": "success",
+                        "output": output,
+                        "timestamp": device_timestamp,
+                    }
+                    logger.debug("%s | %s | command executed", host, command)
 
-            device_output = {}
+                results[key] = {"status": "success", "data": command_results}
 
-            for cmd in cmd_list:
-                output = conn.send_command(cmd)
-                device_output[cmd] = output
-                print(output)
+            except (NetmikoAuthenticationException, NetmikoTimeoutException) as exc:
+                logger.exception("Netmiko connection failure for device %s", key)
+                results[key] = {"status": "failed", "error": str(exc)}
 
-            conn.disconnect()
-            results[host] = device_output
+            finally:
+                if conn is not None:
+                    conn.disconnect()
 
         return results
