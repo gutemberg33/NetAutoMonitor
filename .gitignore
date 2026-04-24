@@ -1,30 +1,48 @@
-# Python
+# ── Python ────────────────────────────────────
 __pycache__/
 *.py[cod]
 *.pyo
+*.pyd
 .pytest_cache/
+.mypy_cache/
+*.egg-info/
+dist/
+build/
 
-# Virtual environment
+# ── Virtual environment ───────────────────────
 venv/
 .venv/
 env/
+ENV/
 
-# Sensitive — never commit
+# ── Sensitive files — NEVER commit ───────────
 config/devices.yaml
 .env
 *.key
 *.pem
+*.p12
+*.crt
 
-# Generated output
+# ── Generated output — not needed in repo ────
 output/
 logs/
+*.log
 
-# Test files
-test_*.py
+# ── Test artifacts ────────────────────────────
+.coverage
+htmlcov/
+coverage.xml
 
-# OS
+# ── OS ────────────────────────────────────────
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# VS Code
-.cursor/
+# ── VS Code ───────────────────────────────────
+.vscode/
+*.code-workspace
+
+# ── Misc ──────────────────────────────────────
+*.bak
+*.swp
+*.tmp
