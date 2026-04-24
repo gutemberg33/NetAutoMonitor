@@ -48,10 +48,16 @@ class DeviceManager:
 
                 # Execute commands sequentially and capture output.
                 for command in command_list:
-                    output = conn.send_command(command)
+                    output = conn.send_command(command, use_textfsm=True)
+                    # TextFSM may return structured rows (list) or raw text (str).
+                    if isinstance(output, list):
+                        normalized_output = output
+                    else:
+                        normalized_output = str(output)
+
                     command_results[command] = {
                         "status": "success",
-                        "output": output,
+                        "output": normalized_output,
                         "timestamp": device_timestamp,
                     }
                     logger.debug("%s | %s | command executed", host, command)
