@@ -1,20 +1,24 @@
+"""Application entrypoint for running network command collection."""
+
+# Import the orchestration, config loading, and persistence components.
 from device_manager import DeviceManager
 from utils import load_yaml
 from output_manager import OutputManager
 
-# Load runtime settings (timeouts, command map) and device inventory.
+# Load runtime settings (command mapping, timeout) from YAML files.
 config = load_yaml("config/config.yaml")
+# Load target device inventory from YAML files.
 devices = load_yaml("config/devices.yaml")
 
-# Build the orchestrator with device list, per-platform commands, and fallback timeout.
+# Create the manager with inventory, per-platform command map, and timeout.
 manager = DeviceManager(
     devices=devices["devices"],
     commands=config["commands"],
     timeout=config.get("timeout", 5)
 )
 
-# Execute all commands across all configured devices.
+# Run command collection against all configured devices.
 results = manager.run()
 
-# Persist collected command outputs for later analysis.
+# Save collected data as JSON for auditing and later analysis.
 OutputManager().save_json(results)
