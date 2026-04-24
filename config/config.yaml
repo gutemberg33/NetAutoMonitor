@@ -1,0 +1,9 @@
+# global settings
+timeout: 5
+commands:
+  linux:
+    - ip a
+    - uname -a
+  cisco_ios:
+    - show ip int brief
+    - show version
